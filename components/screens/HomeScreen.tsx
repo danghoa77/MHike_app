@@ -7,13 +7,16 @@ import { hikeService } from '../../db/databaseHelper';
 import { horizontalScale, verticalScaleFn, moderateScaleFn } from '../../constants/Layout';
 import AddHikeModal from 'components/AddHikeModal';
 import HikeImageSlider from 'components/HikeImageSlider';
-
+import { useTheme } from '../../theme/ThemeContext';
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const [hikes, setHikes] = useState<Hike[]>([]);
   const [lang, setLang] = useState(i18n.language);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHike, setEditingHike] = useState<Hike | null>(null);
+
+  const { theme, toggleTheme } = useTheme();
+
   useEffect(() => {
     loadHikes();
   }, []);
@@ -59,70 +62,110 @@ export default function HomeScreen() {
   const renderHike = (item: Hike) => (
     <View
       key={item.id}
-      className="mb-4 rounded-2xl border border-gray-100 bg-white shadow-sm"
+      className="mb-4 rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
       style={{ padding: horizontalScale(14) }}>
+      {/* Header */}
       <View className="mb-1 flex-row items-center justify-between">
-        <Text className="font-semibold text-gray-900" style={{ fontSize: moderateScaleFn(16) }}>
+        <Text
+          className="font-semibold text-gray-900 dark:text-gray-100"
+          style={{ fontSize: moderateScaleFn(16) }}>
           {item.name}
         </Text>
+
+        {/* Difficulty tag */}
         <View
           className={`rounded-md px-2 py-0.5 ${
             item.difficulty === 'Easy'
-              ? 'bg-green-100'
+              ? 'bg-green-100 dark:bg-green-900/30'
               : item.difficulty === 'Medium'
-                ? 'bg-yellow-100'
-                : 'bg-red-100'
+                ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                : 'bg-red-100 dark:bg-red-900/30'
           }`}>
           <Text
             style={{ fontSize: moderateScaleFn(11) }}
             className={`font-semibold ${
               item.difficulty === 'Easy'
-                ? 'text-green-700'
+                ? 'text-green-700 dark:text-green-400'
                 : item.difficulty === 'Medium'
-                  ? 'text-yellow-700'
-                  : 'text-red-700'
+                  ? 'text-yellow-700 dark:text-yellow-400'
+                  : 'text-red-700 dark:text-red-400'
             }`}>
             {t(`addHike.${item.difficulty.toLowerCase()}`)}
           </Text>
         </View>
       </View>
 
+      {/* Hình ảnh */}
       {item.images && item.images.length > 0 && <HikeImageSlider images={item.images} />}
+
+      {/* Location */}
       <View className="mt-1 flex-row items-center">
-        <Ionicons name="location-outline" size={moderateScaleFn(14)} color="#4b5563" />
-        <Text className="ml-1 text-gray-600" style={{ fontSize: moderateScaleFn(13) }}>
+        <Ionicons
+          name="location-outline"
+          size={moderateScaleFn(14)}
+          color={theme === 'light' ? '#4b5563' : '#d1d5db'}
+        />
+        <Text
+          className="ml-1 text-gray-600 dark:text-gray-300"
+          style={{ fontSize: moderateScaleFn(13) }}>
           {item.location}
         </Text>
       </View>
 
+      {/* Date */}
       <View className="mt-1 flex-row items-center">
-        <Ionicons name="calendar-outline" size={moderateScaleFn(14)} color="#4b5563" />
-        <Text className="ml-1 text-gray-600" style={{ fontSize: moderateScaleFn(13) }}>
+        <Ionicons
+          name="calendar-outline"
+          size={moderateScaleFn(14)}
+          color={theme === 'light' ? '#4b5563' : '#d1d5db'}
+        />
+        <Text
+          className="ml-1 text-gray-600 dark:text-gray-300"
+          style={{ fontSize: moderateScaleFn(13) }}>
           {item.date}
         </Text>
       </View>
 
+      {/* Length */}
       <View className="mt-1 flex-row items-center">
-        <Ionicons name="footsteps-outline" size={moderateScaleFn(14)} color="#4b5563" />
-        <Text className="ml-1 text-gray-600" style={{ fontSize: moderateScaleFn(13) }}>
+        <Ionicons
+          name="footsteps-outline"
+          size={moderateScaleFn(14)}
+          color={theme === 'light' ? '#4b5563' : '#d1d5db'}
+        />
+        <Text
+          className="ml-1 text-gray-600 dark:text-gray-300"
+          style={{ fontSize: moderateScaleFn(13) }}>
           {item.length} km
         </Text>
       </View>
 
+      {/* Parking */}
       <View className="mt-1 flex-row items-center">
-        <Ionicons name="car-outline" size={moderateScaleFn(14)} color="#4b5563" />
-        <Text className="ml-1 text-gray-600" style={{ fontSize: moderateScaleFn(13) }}>
+        <Ionicons
+          name="car-outline"
+          size={moderateScaleFn(14)}
+          color={theme === 'light' ? '#4b5563' : '#d1d5db'}
+        />
+        <Text
+          className="ml-1 text-gray-600 dark:text-gray-300"
+          style={{ fontSize: moderateScaleFn(13) }}>
           {item.parkingAvailable ? t('parkingAvailable') : t('noParking')}
         </Text>
       </View>
 
-      <Text className="mt-2 text-gray-700" style={{ fontSize: moderateScaleFn(13) }}>
+      {/* Description */}
+      <Text
+        className="mt-2 text-gray-700 dark:text-gray-300"
+        style={{ fontSize: moderateScaleFn(13) }}>
         {item.description}
       </Text>
 
+      {/* Buttons */}
       <View className="mt-3 flex-row" style={{ gap: horizontalScale(8) }}>
+        {/* View details */}
         <TouchableOpacity
-          className="flex-1 flex-row items-center justify-center rounded-xl bg-green-600"
+          className="flex-1 flex-row items-center justify-center rounded-xl bg-green-600 dark:bg-green-700"
           style={{ paddingVertical: verticalScaleFn(8) }}>
           <Ionicons name="eye-outline" size={moderateScaleFn(16)} color="white" />
           <Text className="ml-1 font-medium text-white" style={{ fontSize: moderateScaleFn(13) }}>
@@ -130,9 +173,10 @@ export default function HomeScreen() {
           </Text>
         </TouchableOpacity>
 
+        {/* Edit */}
         <TouchableOpacity
           onPress={() => handleEdit(item.id!)}
-          className="items-center justify-center rounded-xl bg-gray-400"
+          className="items-center justify-center rounded-xl bg-gray-400 dark:bg-gray-600"
           style={{
             width: horizontalScale(40),
             height: horizontalScale(40),
@@ -140,9 +184,10 @@ export default function HomeScreen() {
           <Ionicons name="pencil" size={moderateScaleFn(16)} color="white" />
         </TouchableOpacity>
 
+        {/* Delete */}
         <TouchableOpacity
           onPress={() => handleDelete(item.id!)}
-          className="items-center justify-center rounded-xl bg-red-400"
+          className="items-center justify-center rounded-xl bg-red-400 dark:bg-red-600"
           style={{
             width: horizontalScale(40),
             height: horizontalScale(40),
@@ -154,7 +199,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
+    <SafeAreaView className="flex-1 bg-neutral-50 dark:bg-neutral-900">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -162,53 +207,89 @@ export default function HomeScreen() {
           paddingBottom: verticalScaleFn(100),
           paddingTop: verticalScaleFn(16),
         }}>
+        {/* Header */}
         <View className="mb-4 flex-row items-center justify-between">
           <View>
             <Text
-              className="font-extrabold text-green-800"
+              className="font-extrabold text-green-800 dark:text-green-400"
               style={{ fontSize: moderateScaleFn(22) }}>
               {t('appTitle')}
             </Text>
-            <Text className="text-gray-500" style={{ fontSize: moderateScaleFn(12) }}>
+            <Text
+              className="text-gray-500 dark:text-gray-400"
+              style={{ fontSize: moderateScaleFn(12) }}>
               {t('subtitle')}
             </Text>
 
-            <TouchableOpacity
-              onPress={toggleLanguage}
-              className="flex-row items-center rounded-xl border border-gray-300 bg-white"
-              style={{
-                paddingHorizontal: horizontalScale(10),
-                paddingVertical: verticalScaleFn(6),
-                alignSelf: 'flex-start',
-                marginHorizontal: horizontalScale(3),
-                marginTop: verticalScaleFn(3),
-              }}>
-              <Ionicons name="globe-outline" size={moderateScaleFn(16)} color="#374151" />
-              <Text
-                className="ml-1 font-medium text-gray-700"
-                style={{ fontSize: moderateScaleFn(12) }}>
-                {lang === 'vi' ? 'EN' : 'VI'}
-              </Text>
-            </TouchableOpacity>
+            {/* Language & Theme Toggles */}
+            <View className="mt-1 flex-row">
+              {/* Toggle Language */}
+              <TouchableOpacity
+                onPress={toggleLanguage}
+                className="flex-row items-center justify-center rounded-xl border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"
+                style={{
+                  width: horizontalScale(75),
+                  paddingVertical: verticalScaleFn(6),
+                  marginHorizontal: horizontalScale(3),
+                }}>
+                <Ionicons
+                  name="globe-outline"
+                  size={moderateScaleFn(16)}
+                  color={theme === 'light' ? '#374151' : '#fbbf24'}
+                />
+                <Text
+                  className="ml-1 font-medium text-gray-700 dark:text-gray-200"
+                  style={{ fontSize: moderateScaleFn(12) }}>
+                  {lang === 'vi' ? 'EN' : 'VI'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Toggle Theme */}
+              <TouchableOpacity
+                onPress={toggleTheme}
+                className="flex-row items-center justify-center rounded-xl border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"
+                style={{
+                  width: horizontalScale(75),
+                  paddingVertical: verticalScaleFn(6),
+                  marginHorizontal: horizontalScale(3),
+                }}>
+                <Ionicons
+                  name={theme === 'light' ? 'moon-outline' : 'sunny-outline'}
+                  size={moderateScaleFn(16)}
+                  color={theme === 'light' ? '#374151' : '#fbbf24'}
+                />
+                <Text
+                  className="ml-1 font-medium text-gray-700 dark:text-gray-200"
+                  style={{ fontSize: moderateScaleFn(12) }}>
+                  {theme === 'light' ? t('theme.dark') : t('theme.light')}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <View className="flex-row items-center" style={{ gap: horizontalScale(2) }}>
+          {/* Buttons: Reset + Add */}
+          <View className="flex-row items-center" style={{ gap: horizontalScale(4) }}>
             <TouchableOpacity
-              className="flex-row items-center rounded-xl border border-gray-300 bg-white"
+              className="flex-row items-center rounded-xl border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"
               style={{
                 paddingHorizontal: horizontalScale(10),
                 paddingVertical: verticalScaleFn(6),
                 maxWidth: horizontalScale(80),
-                marginEnd: horizontalScale(4),
               }}>
-              <Ionicons name="refresh-outline" size={moderateScaleFn(16)} color="#374151" />
-              <Text className="ml-1 flex-1 text-gray-700" style={{ fontSize: moderateScaleFn(12) }}>
+              <Ionicons
+                name="refresh-outline"
+                size={moderateScaleFn(16)}
+                color={theme === 'light' ? '#374151' : '#fbbf24'}
+              />
+              <Text
+                className="ml-1 flex-1 text-gray-700 dark:text-gray-200"
+                style={{ fontSize: moderateScaleFn(12) }}>
                 {t('reset')}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="flex-row items-center rounded-xl bg-green-600"
+              className="flex-row items-center rounded-xl bg-green-600 dark:bg-green-700"
               onPress={() => setShowAddModal(true)}
               style={{
                 paddingHorizontal: horizontalScale(10),
@@ -225,28 +306,38 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Search & Filter */}
         <View className="mb-4 flex-row items-center" style={{ gap: horizontalScale(8) }}>
           <View
-            className="flex-1 flex-row items-center rounded-xl border border-gray-200 bg-white"
-            style={{
-              paddingHorizontal: horizontalScale(10),
-              paddingVertical: verticalScaleFn(6),
-            }}>
-            <Ionicons name="search-outline" size={moderateScaleFn(16)} color="#6b7280" />
-            <Text className="ml-2 flex-1 text-gray-500" style={{ fontSize: moderateScaleFn(12) }}>
+            className="flex-1 flex-row items-center rounded-xl border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800"
+            style={{ paddingHorizontal: horizontalScale(10), paddingVertical: verticalScaleFn(6) }}>
+            <Ionicons
+              name="search-outline"
+              size={moderateScaleFn(16)}
+              color={theme === 'light' ? '#6b7280' : '#d1d5db'}
+            />
+            <Text
+              className="ml-2 flex-1 text-gray-500 dark:text-gray-300"
+              style={{ fontSize: moderateScaleFn(12) }}>
               {t('searchPlaceholder')}
             </Text>
           </View>
 
           <TouchableOpacity
-            className="flex-row items-center rounded-xl border border-gray-200 bg-white"
+            className="flex-row items-center rounded-xl border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800"
             style={{
               paddingHorizontal: horizontalScale(10),
               paddingVertical: verticalScaleFn(6),
               maxWidth: horizontalScale(120),
             }}>
-            <Ionicons name="filter-outline" size={moderateScaleFn(16)} color="#374151" />
-            <Text className="ml-1 flex-1 text-gray-700" style={{ fontSize: moderateScaleFn(12) }}>
+            <Ionicons
+              name="filter-outline"
+              size={moderateScaleFn(16)}
+              color={theme === 'light' ? '#374151' : '#fbbf24'}
+            />
+            <Text
+              className="ml-1 flex-1 text-gray-700 dark:text-gray-200"
+              style={{ fontSize: moderateScaleFn(12) }}>
               {t('filters')}
             </Text>
           </TouchableOpacity>
@@ -265,14 +356,14 @@ export default function HomeScreen() {
             />
 
             <Text
-              className="bold font-semibold text-gray-800"
+              className="bold dark:text font-semibold text-gray-800"
               style={{
                 fontSize: moderateScaleFn(20),
               }}>
               {t('noHikes')}
             </Text>
             <Text
-              className="italic text-gray-400"
+              className="dark:text italic text-gray-400"
               style={{
                 fontSize: moderateScaleFn(10),
                 marginTop: verticalScaleFn(4),

@@ -10,8 +10,13 @@
   "viewDetails": "Xem chi tiết",
   "noHikes": "Chưa có chuyến đi nào",
   "noHikesDes": "Bắt đầu thêm những chuyến đi của bạn để theo dõi các cuộc phiêu lưu!",
+  "theme": {
+  "dark": "Tối",
+  "light": "Sáng"
+  },
   "addHike": {
     "title": "Tạo chuyến đi mới",
+    "editTitle": "Cập nhật chuyến đi",
     "name": "Tên chuyến đi *",
     "namePlaceholder": "Ví dụ: Đỉnh Fansipan",
     "location": "Địa điểm *",

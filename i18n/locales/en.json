@@ -10,8 +10,13 @@
   "viewDetails": "View Details",
   "noHikes": "No hikes yet",
   "noHikesDes": "Start adding your hikes to track your adventures!",
+  "theme": {
+  "dark": "Dark",
+  "light": "Light"
+  },
   "addHike": {
-    "title": "Create New Hike",
+    "Title": "Create New Hike",
+    "editTitle": "Update Hike",
     "name": "Hike Name *",
     "namePlaceholder": "e.g., Snowdon Summit Trail",
     "location": "Location *",

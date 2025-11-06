@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { setupDatabase } from './db/database';
 import HomeScreen from './components/screens/HomeScreen';
 import './i18n/i18n';
+import { ThemeProvider } from 'theme/ThemeContext';
 
 export default function App() {
   useEffect(() => {
@@ -11,8 +12,10 @@ export default function App() {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <HomeScreen />
-    </SafeAreaView>
+    <ThemeProvider>
+      <SafeAreaView style={{ flex: 1 }}>
+        <HomeScreen />
+      </SafeAreaView>
+    </ThemeProvider>
   );
 }
