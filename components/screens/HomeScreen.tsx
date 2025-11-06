@@ -6,12 +6,14 @@ import { Hike } from '../../db/models/Hike';
 import { hikeService } from '../../db/databaseHelper';
 import { horizontalScale, verticalScaleFn, moderateScaleFn } from '../../constants/Layout';
 import AddHikeModal from 'components/AddHikeModal';
+import HikeImageSlider from 'components/HikeImageSlider';
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const [hikes, setHikes] = useState<Hike[]>([]);
   const [lang, setLang] = useState(i18n.language);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingHike, setEditingHike] = useState<Hike | null>(null);
   useEffect(() => {
     loadHikes();
   }, []);
@@ -32,9 +34,26 @@ export default function HomeScreen() {
     setLang(newLang);
   };
 
-  const handleAddHike = async (newHike: Omit<Hike, 'id'>) => {
-    await hikeService.addHike(newHike);
-    loadHikes();
+  const handleEdit = (id: number) => {
+    const hike = hikes.find((h) => h.id === id);
+    if (hike) {
+      setEditingHike(hike);
+      setShowAddModal(true);
+    }
+  };
+
+  const handleSaveHike = async (updatedHike: Hike) => {
+    if (editingHike?.id) {
+      await hikeService.updateHike(editingHike.id, updatedHike);
+      setHikes(
+        hikes.map((h) => (h.id === editingHike.id ? { ...updatedHike, id: editingHike.id } : h))
+      );
+    } else {
+      const insertedId = await hikeService.addHike(updatedHike);
+      setHikes([...hikes, { ...updatedHike, id: insertedId }]);
+    }
+    setEditingHike(null);
+    setShowAddModal(false);
   };
 
   const renderHike = (item: Hike) => (
@@ -63,11 +82,12 @@ export default function HomeScreen() {
                   ? 'text-yellow-700'
                   : 'text-red-700'
             }`}>
-            {item.difficulty}
+            {t(`addHike.${item.difficulty.toLowerCase()}`)}
           </Text>
         </View>
       </View>
 
+      {item.images && item.images.length > 0 && <HikeImageSlider images={item.images} />}
       <View className="mt-1 flex-row items-center">
         <Ionicons name="location-outline" size={moderateScaleFn(14)} color="#4b5563" />
         <Text className="ml-1 text-gray-600" style={{ fontSize: moderateScaleFn(13) }}>
@@ -111,8 +131,18 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          onPress={() => handleEdit(item.id!)}
+          className="items-center justify-center rounded-xl bg-gray-400"
+          style={{
+            width: horizontalScale(40),
+            height: horizontalScale(40),
+          }}>
+          <Ionicons name="pencil" size={moderateScaleFn(16)} color="white" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={() => handleDelete(item.id!)}
-          className="items-center justify-center rounded-xl bg-red-500"
+          className="items-center justify-center rounded-xl bg-red-400"
           style={{
             width: horizontalScale(40),
             height: horizontalScale(40),
@@ -257,8 +287,12 @@ export default function HomeScreen() {
       </ScrollView>
       <AddHikeModal
         visible={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={handleAddHike}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingHike(null);
+        }}
+        onSave={handleSaveHike}
+        initialData={editingHike}
       />
     </SafeAreaView>
   );

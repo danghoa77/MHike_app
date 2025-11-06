@@ -30,9 +30,11 @@
     "description": "Description",
     "descriptionPlaceholder": "Additional notes about the hike...",
     "create": "Create Hike",
+    "save": "Save Hike",
     "cancel": "Cancel",
     "alertTitle": "Missing Information",
     "alertMessage": "Please fill in all required fields before creating a hike.",
-    "permissionError": "Permission to access gallery is required!"
+    "permissionError": "Permission to access gallery is required!",
+    
   }
 }

@@ -30,6 +30,7 @@
     "description": "Mô tả",
     "descriptionPlaceholder": "Ghi chú thêm về chuyến đi...",
     "create": "Tạo chuyến đi",
+    "save": "Lưu chuyến đi",
     "cancel": "Hủy",
     "alertTitle": "Thiếu thông tin",
     "alertMessage": "Vui lòng điền đầy đủ các trường bắt buộc.",

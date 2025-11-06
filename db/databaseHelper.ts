@@ -4,10 +4,10 @@ import { Hike } from "./models/Hike";
 import { Observation } from "./models/Observation";
 
 export const hikeService = {
-    addHike: async (hike: Hike) => {
-        await db.runAsync(
+    addHike: async (hike: Hike): Promise<number> => {
+        const result = await db.runAsync(
             `INSERT INTO Hike (name, location, date, parkingAvailable, length, difficulty, description, images)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 hike.name ?? null,
                 hike.location ?? null,
@@ -19,7 +19,10 @@ export const hikeService = {
                 JSON.stringify(hike.images ?? []),
             ]
         );
+
+        return result.lastInsertRowId;
     },
+
 
     getAllHikes: async (): Promise<Hike[]> => {
         const result = await db.getAllAsync(`SELECT * FROM Hike`);

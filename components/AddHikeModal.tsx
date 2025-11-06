@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -20,10 +20,11 @@ import { useTranslation } from 'react-i18next';
 interface AddHikeModalProps {
   visible: boolean;
   onClose: () => void;
-  onAdd: (hike: Hike) => void;
+  onSave: (hike: Hike) => void;
+  initialData?: Hike | null;
 }
 
-export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalProps) {
+export default function AddHikeModal({ visible, onClose, onSave, initialData }: AddHikeModalProps) {
   const { t } = useTranslation();
   const [form, setForm] = useState<Hike>({
     name: '',
@@ -35,8 +36,24 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
     description: '',
     images: [],
   });
-  const [images, setImages] = useState<string[]>([]);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+
+  useEffect(() => {
+    if (initialData) {
+      setForm(initialData);
+    } else {
+      setForm({
+        name: '',
+        location: '',
+        date: '',
+        parkingAvailable: false,
+        length: 0,
+        difficulty: HikeDifficulty.EASY,
+        description: '',
+        images: [],
+      });
+    }
+  }, [initialData, visible]);
 
   const showDatePicker = () => setDatePickerVisible(true);
   const hideDatePicker = () => setDatePickerVisible(false);
@@ -46,23 +63,12 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
     hideDatePicker();
   };
 
-  const handleAdd = () => {
+  const handleSave = () => {
     if (!form.name.trim() || !form.location.trim() || !form.date.trim() || form.length <= 0) {
       Alert.alert(t('addHike.alertTitle'), t('addHike.alertMessage'));
       return;
     }
-    onAdd(form);
-    setForm({
-      name: '',
-      location: '',
-      date: '',
-      parkingAvailable: false,
-      length: 0,
-      difficulty: HikeDifficulty.EASY,
-      description: '',
-      images: [],
-    });
-    setImages([]);
+    onSave(form);
     onClose();
   };
 
@@ -81,7 +87,7 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
 
     if (!result.canceled) {
       const uris = result.assets.map((asset) => asset.uri);
-      setImages(uris);
+      setForm({ ...form, images: uris });
     }
   };
 
@@ -91,7 +97,7 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
         <View className="max-h-[85%] w-11/12 rounded-2xl bg-white p-5">
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text className="mb-4 text-center text-xl font-semibold text-neutral-900">
-              {t('addHike.title')}
+              {initialData ? t('addHike.editTitle') : t('addHike.title')}
             </Text>
 
             <Text className="mb-1 text-sm text-neutral-700">{t('addHike.name')}</Text>
@@ -119,7 +125,6 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
               </Text>
               <Ionicons name="calendar" size={20} color="gray" />
             </TouchableOpacity>
-
             <DateTimePickerModal
               isVisible={isDatePickerVisible}
               mode="date"
@@ -149,17 +154,13 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
                 selectedValue={form.difficulty}
                 onValueChange={(value) => setForm({ ...form, difficulty: value as HikeDifficulty })}
                 style={{ fontSize: 14, borderRadius: 8 }}>
-                <Picker.Item
-                  label={t('addHike.selectDifficulty')}
-                  value=""
-                  style={{ backgroundColor: '#D1D5DB' }}
-                />
                 <Picker.Item label={t('addHike.easy')} value={HikeDifficulty.EASY} />
                 <Picker.Item label={t('addHike.medium')} value={HikeDifficulty.MEDIUM} />
                 <Picker.Item label={t('addHike.hard')} value={HikeDifficulty.HARD} />
               </Picker>
             </View>
 
+            {/* parking */}
             <View className="mb-3 flex-row items-center justify-between">
               <Text className="text-sm text-neutral-700">{t('addHike.parking')}</Text>
               <Switch
@@ -170,15 +171,13 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
 
             <View>
               <Text className="mb-1 text-sm text-neutral-700">{t('addHike.images')}</Text>
-
               <TouchableOpacity
                 className="mb-3 items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2"
                 onPress={pickImages}>
                 <Text className="text-gray-700">{t('addHike.selectImages')}</Text>
               </TouchableOpacity>
-
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {images.map((uri, index) => (
+                {form.images.map((uri, index) => (
                   <View
                     key={index}
                     style={{
@@ -186,19 +185,16 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
                       height: 80,
                       marginRight: 8,
                       position: 'relative',
-                      marginTop: 4,
-                      marginBottom: 6,
+                      marginVertical: 4,
                     }}>
                     <Image
                       source={{ uri }}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: 8,
-                      }}
+                      style={{ width: '100%', height: '100%', borderRadius: 8 }}
                     />
                     <TouchableOpacity
-                      onPress={() => setImages(images.filter((_, i) => i !== index))}
+                      onPress={() =>
+                        setForm({ ...form, images: form.images.filter((_, i) => i !== index) })
+                      }
                       style={{
                         position: 'absolute',
                         top: -6,
@@ -235,8 +231,10 @@ export default function AddHikeModal({ visible, onClose, onAdd }: AddHikeModalPr
               }}
             />
 
-            <TouchableOpacity className="mt-2 rounded-lg bg-green-600 py-3" onPress={handleAdd}>
-              <Text className="text-center font-semibold text-white">{t('addHike.create')}</Text>
+            <TouchableOpacity className="mt-2 rounded-lg bg-green-600 py-3" onPress={handleSave}>
+              <Text className="text-center font-semibold text-white">
+                {initialData ? t('addHike.save') : t('addHike.create')}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity className="mt-2 py-2" onPress={onClose}>
