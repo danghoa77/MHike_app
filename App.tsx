@@ -128,7 +128,11 @@ function AppContent() {
             backgroundColor: '#fff',
             marginHorizontal: horizontalScale(10),
           }}>
-          <FilterBar onDismiss={() => setShowFilter(false)} onApply={handleFilter} />
+          <FilterBar
+            onDismiss={() => setShowFilter(false)}
+            onApply={handleFilter}
+            reLoad={loadHikes}
+          />
         </Dialog>
       </Portal>
 

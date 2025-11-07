@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { hikeService } from 'db/databaseHelper';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, FlatList } from 'react-native';
@@ -5,9 +7,10 @@ import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, FlatList } f
 interface FilterBarProps {
   onDismiss: () => void;
   onApply: (filters: any) => void;
+  reLoad?: () => void;
 }
 
-export default function FilterBar({ onDismiss, onApply }: FilterBarProps) {
+export default function FilterBar({ onDismiss, onApply, reLoad }: FilterBarProps) {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [difficulty, setDifficulty] = useState('');
@@ -26,6 +29,13 @@ export default function FilterBar({ onDismiss, onApply }: FilterBarProps) {
       maxLength: parseFloat(maxLength) || 100,
     });
     onDismiss();
+  };
+
+  const handleReload = () => {
+    if (reLoad) {
+      reLoad();
+      onDismiss();
+    }
   };
 
   const difficulties = ['Easy', 'Medium', 'Hard'];
@@ -133,12 +143,25 @@ export default function FilterBar({ onDismiss, onApply }: FilterBarProps) {
           />
         </View>
       </View>
-
       <View className="mb-6 flex-row justify-center">
         <TouchableOpacity
           onPress={handleApply}
-          className="w-1/2 rounded-lg bg-green-600 py-3 dark:bg-green-700">
-          <Text className="text-center text-base font-medium text-white">{t('filter.apply')}</Text>
+          className="flex-row items-center justify-center rounded-lg bg-green-600 py-3 dark:bg-green-700"
+          style={{ width: '45%', marginRight: 10 }}>
+          <Ionicons name="checkmark-outline" size={18} color="white" />
+          <Text className="ml-1 text-center text-base font-medium text-white">
+            {t('filter.apply')}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleReload}
+          className="flex-row items-center justify-center rounded-lg bg-blue-600 py-3 dark:bg-blue-700"
+          style={{ width: '45%' }}>
+          <Ionicons name="refresh-outline" size={18} color="white" />
+          <Text className="ml-1 text-center text-base font-medium text-white">
+            {t('filter.reload')}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

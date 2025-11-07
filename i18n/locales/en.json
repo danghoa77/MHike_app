@@ -53,6 +53,7 @@
     "observationNamePlaceholder":"Observation Name"
   },
 "filter": {
+  "reload": "Reload Hikes",
     "title": "Filter Hikes",
     "name": "Hike Name",
     "namePlaceholder": "Search by name...",

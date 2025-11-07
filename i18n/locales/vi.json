@@ -18,6 +18,7 @@
   },
 
   "filter": {
+    "reload": "Tải lại chuyến đi",
     "title": "Bộ lọc",
     "name": "Tên chuyến đi",
     "namePlaceholder": "Tìm theo tên...",
