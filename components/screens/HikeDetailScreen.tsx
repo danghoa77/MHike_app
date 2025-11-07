@@ -130,7 +130,7 @@ export default function HikeDetailScreen({ hikeId, onGoBack }: HikeDetailScreenP
   const renderObservation = (observation: Observation) => (
     <View
       key={observation.id}
-      className="mb-4 rounded-2xl border border-gray-700 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+      className="mb-4 rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800">
       <Text className="mb-1 text-lg font-bold text-gray-900 dark:text-white">
         {observation.name}
       </Text>
