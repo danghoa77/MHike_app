@@ -1,104 +1,85 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+// components/screens/HomeScreen.tsx
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Hike } from '../../db/models/Hike';
 import { hikeService } from '../../db/databaseHelper';
 import { horizontalScale, verticalScaleFn, moderateScaleFn } from '../../constants/Layout';
-import AddHikeModal from 'components/AddHikeModal';
 import HikeImageSlider from 'components/HikeImageSlider';
 import { useTheme } from '../../theme/ThemeContext';
-export default function HomeScreen() {
-  const { t, i18n } = useTranslation();
-  const [hikes, setHikes] = useState<Hike[]>([]);
-  const [lang, setLang] = useState(i18n.language);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingHike, setEditingHike] = useState<Hike | null>(null);
+import { Dialog, Portal, Button } from 'react-native-paper';
 
-  const { theme, toggleTheme } = useTheme();
+interface HomeScreenProps {
+  hikes: Hike[];
+  loadHikes: () => Promise<void>;
+  handleEdit: (id: number) => void;
+  onViewDetails: (id: number) => void;
+}
 
-  useEffect(() => {
-    loadHikes();
-  }, []);
+export default function HomeScreen({
+  hikes,
+  loadHikes,
+  handleEdit,
+  onViewDetails,
+}: HomeScreenProps) {
+  const { t } = useTranslation();
+  const { theme } = useTheme();
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [selectedHikeId, setSelectedHikeId] = useState<number | null>(null);
 
-  const loadHikes = async () => {
-    const data = await hikeService.getAllHikes();
-    setHikes(data);
+  const showConfirmDialog = (id: number) => {
+    setSelectedHikeId(id);
+    setConfirmVisible(true);
   };
 
-  const handleDelete = async (id: number) => {
-    await hikeService.deleteHike(id);
-    loadHikes();
+  const hideConfirmDialog = () => {
+    setConfirmVisible(false);
+    setSelectedHikeId(null);
   };
 
-  const toggleLanguage = () => {
-    const newLang = lang === 'vi' ? 'en' : 'vi';
-    i18n.changeLanguage(newLang);
-    setLang(newLang);
-  };
-
-  const handleEdit = (id: number) => {
-    const hike = hikes.find((h) => h.id === id);
-    if (hike) {
-      setEditingHike(hike);
-      setShowAddModal(true);
+  const confirmDelete = async () => {
+    if (selectedHikeId !== null) {
+      await hikeService.deleteHike(selectedHikeId);
+      await loadHikes();
     }
-  };
-
-  const handleSaveHike = async (updatedHike: Hike) => {
-    if (editingHike?.id) {
-      await hikeService.updateHike(editingHike.id, updatedHike);
-      setHikes(
-        hikes.map((h) => (h.id === editingHike.id ? { ...updatedHike, id: editingHike.id } : h))
-      );
-    } else {
-      const insertedId = await hikeService.addHike(updatedHike);
-      setHikes([...hikes, { ...updatedHike, id: insertedId }]);
-    }
-    setEditingHike(null);
-    setShowAddModal(false);
+    hideConfirmDialog();
   };
 
   const renderHike = (item: Hike) => (
     <View
       key={item.id}
-      className="mb-4 rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      className="mb-4 rounded-2xl border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
       style={{ padding: horizontalScale(14) }}>
-      {/* Header */}
-      <View className="mb-1 flex-row items-center justify-between">
+      <View className="mb-4 flex-row items-center justify-between">
         <Text
-          className="font-semibold text-gray-900 dark:text-gray-100"
+          className="text-3xl font-bold text-gray-900 dark:text-gray-100"
           style={{ fontSize: moderateScaleFn(16) }}>
           {item.name}
         </Text>
-
-        {/* Difficulty tag */}
         <View
-          className={`rounded-md px-2 py-0.5 ${
-            item.difficulty === 'Easy'
-              ? 'bg-green-100 dark:bg-green-900/30'
+          className={`rounded-full px-3 py-1 ${
+            item.difficulty === 'Hard'
+              ? 'bg-red-200 dark:bg-red-900/40'
               : item.difficulty === 'Medium'
-                ? 'bg-yellow-100 dark:bg-yellow-900/30'
-                : 'bg-red-100 dark:bg-red-900/30'
+                ? 'bg-yellow-200 dark:bg-yellow-900/40'
+                : 'bg-green-200 dark:bg-green-900/40'
           }`}>
           <Text
-            style={{ fontSize: moderateScaleFn(11) }}
-            className={`font-semibold ${
-              item.difficulty === 'Easy'
-                ? 'text-green-700 dark:text-green-400'
+            className={`text-xs font-semibold ${
+              item.difficulty === 'Hard'
+                ? 'text-red-800 dark:text-red-300'
                 : item.difficulty === 'Medium'
-                  ? 'text-yellow-700 dark:text-yellow-400'
-                  : 'text-red-700 dark:text-red-400'
+                  ? 'text-yellow-800 dark:text-yellow-300'
+                  : 'text-green-800 dark:text-green-300'
             }`}>
             {t(`addHike.${item.difficulty.toLowerCase()}`)}
           </Text>
         </View>
       </View>
 
-      {/* Hình ảnh */}
-      {item.images && item.images.length > 0 && <HikeImageSlider images={item.images} />}
+      {item.images?.length > 0 && <HikeImageSlider images={item.images} />}
 
-      {/* Location */}
       <View className="mt-1 flex-row items-center">
         <Ionicons
           name="location-outline"
@@ -112,7 +93,6 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Date */}
       <View className="mt-1 flex-row items-center">
         <Ionicons
           name="calendar-outline"
@@ -126,10 +106,9 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Length */}
       <View className="mt-1 flex-row items-center">
         <Ionicons
-          name="footsteps-outline"
+          name="walk-outline"
           size={moderateScaleFn(14)}
           color={theme === 'light' ? '#4b5563' : '#d1d5db'}
         />
@@ -140,7 +119,6 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Parking */}
       <View className="mt-1 flex-row items-center">
         <Ionicons
           name="car-outline"
@@ -154,17 +132,15 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Description */}
       <Text
         className="mt-2 text-gray-700 dark:text-gray-300"
         style={{ fontSize: moderateScaleFn(13) }}>
         {item.description}
       </Text>
 
-      {/* Buttons */}
       <View className="mt-3 flex-row" style={{ gap: horizontalScale(8) }}>
-        {/* View details */}
         <TouchableOpacity
+          onPress={() => onViewDetails(item.id!)}
           className="flex-1 flex-row items-center justify-center rounded-xl bg-green-600 dark:bg-green-700"
           style={{ paddingVertical: verticalScaleFn(8) }}>
           <Ionicons name="eye-outline" size={moderateScaleFn(16)} color="white" />
@@ -173,218 +149,75 @@ export default function HomeScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Edit */}
         <TouchableOpacity
           onPress={() => handleEdit(item.id!)}
-          className="items-center justify-center rounded-xl bg-gray-400 dark:bg-gray-600"
-          style={{
-            width: horizontalScale(40),
-            height: horizontalScale(40),
-          }}>
-          <Ionicons name="pencil" size={moderateScaleFn(16)} color="white" />
+          className="mr-2 flex-row items-center rounded-lg bg-blue-500/10 p-2 dark:bg-blue-300">
+          <Ionicons name="create-outline" size={moderateScaleFn(16)} />
         </TouchableOpacity>
 
-        {/* Delete */}
         <TouchableOpacity
-          onPress={() => handleDelete(item.id!)}
-          className="items-center justify-center rounded-xl bg-red-400 dark:bg-red-600"
-          style={{
-            width: horizontalScale(40),
-            height: horizontalScale(40),
-          }}>
-          <Ionicons name="trash-outline" size={moderateScaleFn(16)} color="white" />
+          onPress={() => showConfirmDialog(item.id!)}
+          className="flex-row items-center rounded-lg bg-red-500/10 p-2 dark:bg-red-300">
+          <Ionicons name="trash-outline" size={moderateScaleFn(16)} />
         </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50 dark:bg-neutral-900">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: horizontalScale(16),
-          paddingBottom: verticalScaleFn(100),
-          paddingTop: verticalScaleFn(16),
-        }}>
-        {/* Header */}
-        <View className="mb-4 flex-row items-center justify-between">
-          <View>
-            <Text
-              className="font-extrabold text-green-800 dark:text-green-400"
-              style={{ fontSize: moderateScaleFn(22) }}>
-              {t('appTitle')}
-            </Text>
-            <Text
-              className="text-gray-500 dark:text-gray-400"
-              style={{ fontSize: moderateScaleFn(12) }}>
-              {t('subtitle')}
-            </Text>
-
-            {/* Language & Theme Toggles */}
-            <View className="mt-1 flex-row">
-              {/* Toggle Language */}
-              <TouchableOpacity
-                onPress={toggleLanguage}
-                className="flex-row items-center justify-center rounded-xl border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"
-                style={{
-                  width: horizontalScale(75),
-                  paddingVertical: verticalScaleFn(6),
-                  marginHorizontal: horizontalScale(3),
-                }}>
-                <Ionicons
-                  name="globe-outline"
-                  size={moderateScaleFn(16)}
-                  color={theme === 'light' ? '#374151' : '#fbbf24'}
-                />
-                <Text
-                  className="ml-1 font-medium text-gray-700 dark:text-gray-200"
-                  style={{ fontSize: moderateScaleFn(12) }}>
-                  {lang === 'vi' ? 'EN' : 'VI'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Toggle Theme */}
-              <TouchableOpacity
-                onPress={toggleTheme}
-                className="flex-row items-center justify-center rounded-xl border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"
-                style={{
-                  width: horizontalScale(75),
-                  paddingVertical: verticalScaleFn(6),
-                  marginHorizontal: horizontalScale(3),
-                }}>
-                <Ionicons
-                  name={theme === 'light' ? 'moon-outline' : 'sunny-outline'}
-                  size={moderateScaleFn(16)}
-                  color={theme === 'light' ? '#374151' : '#fbbf24'}
-                />
-                <Text
-                  className="ml-1 font-medium text-gray-700 dark:text-gray-200"
-                  style={{ fontSize: moderateScaleFn(12) }}>
-                  {theme === 'light' ? t('theme.dark') : t('theme.light')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Buttons: Reset + Add */}
-          <View className="flex-row items-center" style={{ gap: horizontalScale(4) }}>
-            <TouchableOpacity
-              className="flex-row items-center rounded-xl border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"
-              style={{
-                paddingHorizontal: horizontalScale(10),
-                paddingVertical: verticalScaleFn(6),
-                maxWidth: horizontalScale(80),
-              }}>
-              <Ionicons
-                name="refresh-outline"
-                size={moderateScaleFn(16)}
-                color={theme === 'light' ? '#374151' : '#fbbf24'}
-              />
-              <Text
-                className="ml-1 flex-1 text-gray-700 dark:text-gray-200"
-                style={{ fontSize: moderateScaleFn(12) }}>
-                {t('reset')}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-row items-center rounded-xl bg-green-600 dark:bg-green-700"
-              onPress={() => setShowAddModal(true)}
-              style={{
-                paddingHorizontal: horizontalScale(10),
-                paddingVertical: verticalScaleFn(6),
-                maxWidth: horizontalScale(120),
-              }}>
-              <Ionicons name="add-outline" size={moderateScaleFn(16)} color="white" />
-              <Text
-                className="ml-1 flex-1 font-semibold text-white"
-                style={{ fontSize: moderateScaleFn(12) }}>
-                {t('addHikeButton')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Search & Filter */}
-        <View className="mb-4 flex-row items-center" style={{ gap: horizontalScale(8) }}>
-          <View
-            className="flex-1 flex-row items-center rounded-xl border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800"
-            style={{ paddingHorizontal: horizontalScale(10), paddingVertical: verticalScaleFn(6) }}>
-            <Ionicons
-              name="search-outline"
-              size={moderateScaleFn(16)}
-              color={theme === 'light' ? '#6b7280' : '#d1d5db'}
-            />
-            <Text
-              className="ml-2 flex-1 text-gray-500 dark:text-gray-300"
-              style={{ fontSize: moderateScaleFn(12) }}>
-              {t('searchPlaceholder')}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            className="flex-row items-center rounded-xl border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800"
+    <>
+      {hikes.length === 0 ? (
+        <View className=" items-center justify-center bg-white dark:bg-gray-700">
+          <Ionicons
+            name="location-outline"
+            size={moderateScaleFn(70)}
+            color="#d1d5db"
+            style={{ marginBottom: verticalScaleFn(10), marginTop: verticalScaleFn(100) }}
+          />
+          <Text
+            className="font-semibold text-gray-800 dark:text-white"
+            style={{ fontSize: moderateScaleFn(20) }}>
+            {t('noHikes')}
+          </Text>
+          <Text
+            className="italic text-gray-400 dark:text-gray-400"
             style={{
-              paddingHorizontal: horizontalScale(10),
-              paddingVertical: verticalScaleFn(6),
-              maxWidth: horizontalScale(120),
+              fontSize: moderateScaleFn(10),
+              marginTop: verticalScaleFn(4),
+              maxWidth: horizontalScale(500),
+              marginBottom: verticalScaleFn(200),
             }}>
-            <Ionicons
-              name="filter-outline"
-              size={moderateScaleFn(16)}
-              color={theme === 'light' ? '#374151' : '#fbbf24'}
-            />
-            <Text
-              className="ml-1 flex-1 text-gray-700 dark:text-gray-200"
-              style={{ fontSize: moderateScaleFn(12) }}>
-              {t('filters')}
-            </Text>
-          </TouchableOpacity>
+            {t('noHikesDes')}
+          </Text>
         </View>
+      ) : (
+        hikes.map(renderHike)
+      )}
 
-        {hikes.length === 0 ? (
-          <View className="items-center justify-center">
-            <Ionicons
-              name="location-outline"
-              size={moderateScaleFn(70)}
-              color="#d1d5db"
-              style={{
-                marginBottom: verticalScaleFn(10),
-                marginTop: verticalScaleFn(100),
-              }}
-            />
-
-            <Text
-              className="bold dark:text font-semibold text-gray-800"
-              style={{
-                fontSize: moderateScaleFn(20),
-              }}>
-              {t('noHikes')}
+      <Portal>
+        <Dialog
+          visible={confirmVisible}
+          onDismiss={hideConfirmDialog}
+          style={{
+            borderRadius: 16,
+            backgroundColor: theme === 'light' ? 'white' : '#1f2937',
+          }}>
+          <Dialog.Title style={{ color: theme === 'light' ? '#111' : '#f3f4f6' }}>
+            {t('addHike.confirmDeleteTitle')}
+          </Dialog.Title>
+          <Dialog.Content>
+            <Text style={{ color: theme === 'light' ? '#374151' : '#d1d5db' }}>
+              {t('addHike.confirmDeleteMessage')}
             </Text>
-            <Text
-              className="dark:text italic text-gray-400"
-              style={{
-                fontSize: moderateScaleFn(10),
-                marginTop: verticalScaleFn(4),
-                maxWidth: horizontalScale(500),
-              }}>
-              {t('noHikesDes')}
-            </Text>
-          </View>
-        ) : (
-          hikes.map(renderHike)
-        )}
-      </ScrollView>
-      <AddHikeModal
-        visible={showAddModal}
-        onClose={() => {
-          setShowAddModal(false);
-          setEditingHike(null);
-        }}
-        onSave={handleSaveHike}
-        initialData={editingHike}
-      />
-    </SafeAreaView>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={hideConfirmDialog}>{t('addHike.cancel')}</Button>
+            <Button onPress={confirmDelete} textColor="red">
+              {t('addHike.delete')}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </>
   );
 }

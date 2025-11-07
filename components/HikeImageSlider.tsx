@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -20,54 +21,71 @@ export default function HikeImageSlider({ images }: Props) {
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
   const [errorIndex, setErrorIndex] = useState<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const opacity = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList<string>>(null);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // SỬA Ở ĐÂY: Chia cho `width` thay vì `width * 0.9`
     const index = Math.round(e.nativeEvent.contentOffset.x / width);
     setActiveIndex(index);
   };
 
+  const handleImageLoad = () => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
-    <View>
+    <View className="items-center">
       <FlatList
         ref={flatListRef}
         data={images}
         keyExtractor={(_, index) => index.toString()}
         horizontal
-        pagingEnabled
+        snapToInterval={width}
+        disableIntervalMomentum={true}
+        snapToAlignment="center"
+        decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={handleScroll}
         renderItem={({ item, index }) => (
           <View
             style={{
-              width,
+              width: width * 0.9,
+              height: 260,
+              overflow: 'hidden',
+              backgroundColor: '#000',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#000',
+              marginHorizontal: (width - width * 0.9) / 2,
             }}>
             {loadingIndex === index && <ActivityIndicator size="large" color="#16a34a" />}
 
-            <Image
+            <Animated.Image
               source={{ uri: item }}
               style={{
-                width: width * 0.9,
-                height: 220,
-                borderRadius: 12,
+                width: '100%',
+                height: '100%',
                 resizeMode: 'cover',
+                opacity,
               }}
-              onLoadStart={() => setLoadingIndex(index)}
-              onLoadEnd={() => setLoadingIndex(null)}
+              onLoadStart={() => {
+                setLoadingIndex(index);
+                opacity.setValue(0);
+              }}
+              onLoadEnd={() => {
+                setLoadingIndex(null);
+                handleImageLoad();
+              }}
               onError={() => setErrorIndex(index)}
             />
 
             {errorIndex === index && (
-              <View
-                style={{
-                  position: 'absolute',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
+              <View className="absolute inset-0 items-center justify-center">
                 <Ionicons name="alert-circle-outline" size={50} color="#aaa" />
               </View>
             )}
