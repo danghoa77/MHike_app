@@ -65,7 +65,18 @@
     "maxLength": "Max Length (km)",
     "apply": "Apply Filters"
   },
+
+  "map": {
+  "address": "Address",
+  "title": "Select Location on Map",
+  "getAddress": "Fetching address...",
+  "cancel": "Cancel",
+  "choose": "Confirm",
+  "error": "Error fetching address."
+  },
+
   "addHike": {
+  "takePhoto": "Take a Photo",
   "confirmDeleteTitle": "Delete Hike",
   "confirmDeleteMessage": "Are you sure you want to delete this hike?",
   "delete": "Delete",

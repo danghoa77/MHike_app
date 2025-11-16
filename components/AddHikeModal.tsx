@@ -16,7 +16,9 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
+import MapPickerModal from './MapPickerModal';
 
+import { ThemeProvider, useTheme } from 'theme/ThemeContext';
 interface AddHikeModalProps {
   visible: boolean;
   onClose: () => void;
@@ -38,7 +40,8 @@ export default function AddHikeModal({ visible, onClose, onSave, initialData }: 
     images: [],
   });
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const { theme } = useTheme();
   useEffect(() => {
     if (initialData) {
       setForm(initialData);
@@ -62,6 +65,25 @@ export default function AddHikeModal({ visible, onClose, onSave, initialData }: 
     const formattedDate = date.toISOString().split('T')[0];
     setForm({ ...form, date: formattedDate });
     hideDatePicker();
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      alert(t('addHike.permissionError'));
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setForm({ ...form, images: [...form.images, uri] });
+    }
   };
 
   const handleSave = () => {
@@ -111,16 +133,35 @@ export default function AddHikeModal({ visible, onClose, onSave, initialData }: 
               onChangeText={(t) => setForm({ ...form, name: t })}
             />
 
-            <Text className="mb-1 text-sm text-neutral-700 dark:text-white">
-              {t('addHike.location')}
-            </Text>
-            <TextInput
-              className="mb-3 rounded-lg border border-gray-300 px-3 py-2 text-black dark:bg-gray-400"
-              placeholder={t('addHike.locationPlaceholder')}
-              value={form.location}
-              onChangeText={(t) => setForm({ ...form, location: t })}
-            />
+            <View className="mb-4">
+              <Text className="mb-1 text-sm text-neutral-700 dark:text-white">
+                {t('addHike.location')}
+              </Text>
+              <View className="relative flex-row items-center">
+                <TextInput
+                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 pr-10 text-black dark:bg-gray-400 dark:text-white"
+                  placeholder={t('addHike.locationPlaceholder')}
+                  value={form.location}
+                  onChangeText={(t) => setForm({ ...form, location: t })}
+                />
 
+                <TouchableOpacity
+                  onPress={() => setModalVisible(true)}
+                  className="absolute right-2 rounded-md">
+                  <Ionicons name="location-outline" size={20} color={'#000000'} />
+                </TouchableOpacity>
+              </View>
+
+              <MapPickerModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onSelect={(loc) => {
+                  setForm({ ...form, location: loc.address });
+                  setModalVisible(false);
+                }}
+                theme={theme}
+              />
+            </View>
             <Text className="mb-1 text-sm text-neutral-700 dark:text-white">
               {t('addHike.date')}
             </Text>
@@ -181,11 +222,22 @@ export default function AddHikeModal({ visible, onClose, onSave, initialData }: 
               <Text className="mb-1 text-sm text-neutral-700 dark:text-white">
                 {t('addHike.images')}
               </Text>
-              <TouchableOpacity
-                className="mb-3 items-center justify-center rounded-lg border border-gray-300 px-3 py-2 dark:bg-gray-400 dark:hover:text-white"
-                onPress={pickImages}>
-                <Text className="text-gray-700">{t('addHike.selectImages')}</Text>
-              </TouchableOpacity>
+              <View className="mb-3 flex-row justify-between">
+                <TouchableOpacity
+                  className="mr-2 flex-1 items-center justify-center rounded-lg border border-gray-300 px-3 py-2 dark:bg-gray-400"
+                  onPress={takePhoto}>
+                  <Ionicons name="camera" size={20} color="gray" />
+                  <Text className="text-gray-700">{t('addHike.takePhoto')}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="ml-2 flex-1 items-center justify-center rounded-lg border border-gray-300 px-3 py-2 dark:bg-gray-400"
+                  onPress={pickImages}>
+                  <Ionicons name="images" size={20} color="gray" />
+                  <Text className="text-gray-700">{t('addHike.selectImages')}</Text>
+                </TouchableOpacity>
+              </View>
+
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {form.images.map((uri, index) => (
                   <View key={index} className="relative my-1 mr-2 mt-4 h-20 w-20 pt-1">
@@ -231,6 +283,12 @@ export default function AddHikeModal({ visible, onClose, onSave, initialData }: 
             </TouchableOpacity>
           </ScrollView>
         </View>
+
+        {/* <MapPickerModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSelect={(loc) => setLocation(loc.address)}
+        /> */}
       </View>
     </Modal>
   );

@@ -68,7 +68,17 @@
   "observationNamePlaceholder":"Tên Ghi chú"
 
   },
+  "map": {
+  "address": "Địa chỉ",
+  "title": "Chọn vị trí trên bản đồ",
+  "getAddress": "Đang tải",
+  "cancel": "Hủy",
+  "choose": "Xác nhận",
+  "error": "Lỗi tải bản đồ"
+  },
+
   "addHike": {
+  "takePhoto": "Chụp hình ảnh mới",
   "title": "Tạo chuyến đi mới",
   "editTitle": "Cập nhật chuyến đi",
   "name": "Tên chuyến đi",
