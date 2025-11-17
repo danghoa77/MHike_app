@@ -4,31 +4,11 @@ import { Platform } from 'react-native';
 
 let db: SQLite.SQLiteDatabase;
 
-if (Platform.OS === 'web') {
-    console.warn('[SQLite] Web platform detected — using mock database (no persistence).');
+db = SQLite.openDatabaseSync('mhike.db');
 
-
-    const mockDb: any = {
-        execAsync: async () => { },
-        runAsync: async () => { },
-        getAllAsync: async () => [],
-        getFirstAsync: async () => null,
-        closeAsync: async () => { },
-    };
-
-    db = mockDb;
-} else {
-
-    db = SQLite.openDatabaseSync('mhike.db');
-}
 
 export const setupDatabase = async () => {
-    if (Platform.OS === 'web') {
-        console.log('[SQLite] Skipping table creation on web (mock mode).');
-        return;
-    }
-
-    await db.execAsync(`
+  await db.execAsync(`
     CREATE TABLE IF NOT EXISTS Hike (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,

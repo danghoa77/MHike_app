@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import MapPickerModal from './MapPickerModal';
+import { verticalScaleFn } from 'constants/Layout';
 
 import { ThemeProvider, useTheme } from 'theme/ThemeContext';
 interface AddHikeModalProps {
@@ -117,7 +118,9 @@ export default function AddHikeModal({ visible, onClose, onSave, initialData }: 
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View className="flex-1 items-center justify-center bg-black/40">
-        <View className="max-h-[85%] w-11/12 rounded-2xl bg-white p-5 dark:bg-gray-700 ">
+        <View
+          className="w-11/12 rounded-2xl bg-white p-5 dark:bg-gray-700"
+          style={{ maxHeight: verticalScaleFn(844) * 0.85 }}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text className="mb-4 text-center text-xl font-semibold text-neutral-900 dark:text-white">
               {initialData ? t('addHike.editTitle') : t('addHike.title')}
