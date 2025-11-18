@@ -21,7 +21,6 @@ interface MapPickerModalProps {
   visible: boolean;
   onClose: () => void;
   onSelect: (location: LocationData) => void;
-  theme: 'light' | 'dark';
 }
 
 export default function MapPickerModal({ visible, onClose, onSelect }: MapPickerModalProps) {

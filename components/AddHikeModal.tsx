@@ -25,7 +25,6 @@ interface AddHikeModalProps {
   onClose: () => void;
   onSave: (hike: Hike) => void;
   initialData?: Hike | null;
-  theme: 'light' | 'dark';
 }
 
 export default function AddHikeModal({ visible, onClose, onSave, initialData }: AddHikeModalProps) {
@@ -142,7 +141,7 @@ export default function AddHikeModal({ visible, onClose, onSave, initialData }: 
               </Text>
               <View className="relative flex-row items-center">
                 <TextInput
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 pr-10 text-black dark:bg-gray-400 dark:text-white"
+                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 pr-10 text-black dark:bg-gray-400"
                   placeholder={t('addHike.locationPlaceholder')}
                   value={form.location}
                   onChangeText={(t) => setForm({ ...form, location: t })}
@@ -162,7 +161,6 @@ export default function AddHikeModal({ visible, onClose, onSave, initialData }: 
                   setForm({ ...form, location: loc.address });
                   setModalVisible(false);
                 }}
-                theme={theme}
               />
             </View>
             <Text className="mb-1 text-sm text-neutral-700 dark:text-white">

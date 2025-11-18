@@ -16,6 +16,7 @@ interface HikeDetailScreenProps {
   onGoBack: () => void;
 }
 
+
 export default function HikeDetailScreen({ hikeId, onGoBack }: HikeDetailScreenProps) {
   const { t } = useTranslation();
   const { theme } = useTheme();

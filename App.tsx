@@ -88,7 +88,7 @@ function AppContent() {
     const hike = hikes.find((h) => h.id === id);
     if (hike) {
       setEditingHike(hike);
-      setShowAddModal(true);
+       (true);
     }
   };
 
@@ -144,7 +144,6 @@ function AppContent() {
         }}
         onSave={handleSaveHike}
         initialData={editingHike}
-        theme={theme}
       />
     </SafeAreaView>
   );
